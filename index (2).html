@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart To-Do List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen p-4 sm:p-8 flex items-center justify-center font-sans">
+
+  <div class="bg-gray-800 border border-gray-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-6">
+    
+    <!-- Title -->
+    <div class="flex justify-between items-center border-b border-gray-700 pb-4">
+      <div>
+        <h1 class="text-2xl font-bold text-white flex items-center gap-2">📝 Task Manager</h1>
+        <p class="text-xs text-gray-400 mt-1">Local Storage ke saath automatic save</p>
+      </div>
+      <button onclick="clearAllTasks()" class="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-3 py-1.5 rounded-lg border border-red-800 transition">
+        Clear All
+      </button>
+    </div>
+
+    <!-- Statistics Bar -->
+    <div class="grid grid-cols-3 gap-2 bg-gray-900/80 p-3 rounded-xl text-center border border-gray-700/60">
+      <div>
+        <div id="statTotal" class="text-lg font-bold text-blue-400">0</div>
+        <div class="text-[11px] text-gray-400 uppercase">Total</div>
+      </div>
+      <div>
+        <div id="statActive" class="text-lg font-bold text-amber-400">0</div>
+        <div class="text-[11px] text-gray-400 uppercase">Active</div>
+      </div>
+      <div>
+        <div id="statCompleted" class="text-lg font-bold text-emerald-400">0</div>
+        <div class="text-[11px] text-gray-400 uppercase">Done</div>
+      </div>
+    </div>
+
+    <!-- Input Box -->
+    <form onsubmit="addTask(event)" class="flex gap-2">
+      <input type="text" id="taskInput" placeholder="Naya task likhein..." required
+        class="flex-1 bg-gray-900 text-white px-4 py-2.5 rounded-xl border border-gray-700 text-sm focus:outline-none focus:border-blue-500">
+      <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow">
+        Add ➕
+      </button>
+    </form>
+
+    <!-- Filter Buttons -->
+    <div class="flex gap-2 border-b border-gray-700 pb-3">
+      <button onclick="setFilter('all')" id="filterAll" class="text-xs px-3 py-1.5 rounded-lg font-medium bg-blue-600 text-white">All</button>
+      <button onclick="setFilter('active')" id="filterActive" class="text-xs px-3 py-1.5 rounded-lg font-medium text-gray-400 hover:text-white bg-gray-900">Active</button>
+      <button onclick="setFilter('completed')" id="filterCompleted" class="text-xs px-3 py-1.5 rounded-lg font-medium text-gray-400 hover:text-white bg-gray-900">Completed</button>
+    </div>
+
+    <!-- Tasks List Area -->
+    <ul id="taskList" class="space-y-2 max-h-72 overflow-y-auto pr-1"></ul>
+
+  </div>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem('my_todo_tasks') || '[]');
+    let currentFilter = 'all';
+
+    function saveTasks() {
+      localStorage.setItem('my_todo_tasks', JSON.stringify(tasks));
+      render();
+    }
+
+    function addTask(e) {
+      e.preventDefault();
+      const input = document.getElementById('taskInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      tasks.unshift({
+        id: Date.now(),
+        text: text,
+        completed: false
+      });
+
+      input.value = '';
+      saveTasks();
+    }
+
+    function toggleTask(id) {
+      tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      saveTasks();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasks();
+    }
+
+    function editTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+      const newText = prompt('Task ko edit karein:', task.text);
+      if (newText !== null && newText.trim() !== '') {
+        task.text = newText.trim();
+        saveTasks();
+      }
+    }
+
+    function clearAllTasks() {
+      if (tasks.length === 0) return;
+      if (confirm('Kya aap saare tasks delete karna chahte hain?')) {
+        tasks = [];
+        saveTasks();
+      }
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      ['all', 'active', 'completed'].forEach(f => {
+        const btn = document.getElementById('filter' + f.charAt(0).toUpperCase() + f.slice(1));
+        if (f === filter) {
+          btn.className = 'text-xs px-3 py-1.5 rounded-lg font-medium bg-blue-600 text-white';
+        } else {
+          btn.className = 'text-xs px-3 py-1.5 rounded-lg font-medium text-gray-400 hover:text-white bg-gray-900';
+        }
+      });
+      render();
+    }
+
+    function render() {
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+
+      let filtered = tasks;
+      if (currentFilter === 'active') filtered = tasks.filter(t => !t.completed);
+      if (currentFilter === 'completed') filtered = tasks.filter(t => t.completed);
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<li class="text-center py-6 text-xs text-gray-500">Koi task uplabdh nahi hai</li>';
+      } else {
+        filtered.forEach(t => {
+          const li = document.createElement('li');
+          li.className = 'flex items-center justify-between p-3 bg-gray-900/90 rounded-xl border border-gray-700/60';
+          li.innerHTML = `
+            <div class="flex items-center gap-3 overflow-hidden flex-1 cursor-pointer" onclick="toggleTask(${t.id})">
+              <input type="checkbox" ${t.completed ? 'checked' : ''} class="w-4 h-4 accent-blue-500 rounded cursor-pointer pointer-events-none">
+              <span class="text-sm truncate ${t.completed ? 'line-through text-gray-500' : 'text-gray-200'}">${t.text}</span>
+            </div>
+            <div class="flex items-center gap-1.5 ml-2">
+              <button onclick="editTask(${t.id})" class="text-xs text-gray-400 hover:text-blue-400 p-1">✏️</button>
+              <button onclick="deleteTask(${t.id})" class="text-xs text-gray-400 hover:text-red-400 p-1">🗑️</button>
+            </div>
+          `;
+          list.appendChild(li);
+        });
+      }
+
+      // Update Statistics
+      const total = tasks.length;
+      const completed = tasks.filter(t => t.completed).length;
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statActive').innerText = total - completed;
+      document.getElementById('statCompleted').innerText = completed;
+    }
+
+    render();
+  </script>
+</body>
+</html>

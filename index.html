@@ -1,1 +1,45 @@
 
+## Quick Start
+
+1. Open `index.html` in your web browser
+2. Start adding tasks
+3. Tasks are automatically saved to local storage
+4. Tasks persist even after closing the browser
+
+## Usage
+
+### Add a Task
+1. Type your task in the input field
+2. Press Enter or click the Add button
+3. Task appears in your list
+
+### Complete a Task
+- Click the checkbox next to a task to mark it complete
+- Completed tasks appear with a strikethrough
+
+### Delete a Task
+- Click the trash icon to remove a task
+- Task is removed from both UI and local storage
+
+### Filter Tasks
+- Click "All" to see all tasks
+- Click "Active" to see incomplete tasks
+- Click "Completed" to see finished tasks
+
+### Clear Completed
+- Click "Clear Completed" to remove all finished tasks
+
+## Local Storage Details
+
+Tasks are stored as JSON in `localStorage` under the key `todos`.
+
+**Storage Format:**
+```json
+[
+  {
+    "id": 1,
+    "text": "Task description",
+    "completed": false,
+    "createdAt": "2024-01-01T12:00:00Z"
+  }
+]
