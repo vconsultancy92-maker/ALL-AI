@@ -1,0 +1,17 @@
+.image-tool {
+  display: flex;
+  flex-direction: column;
+}
+
+.image-result {
+  margin-top: 25px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.image-result img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
